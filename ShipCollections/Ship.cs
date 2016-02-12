@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.IO;
 
 namespace ShipCollections
@@ -36,6 +38,27 @@ namespace ShipCollections
             var json = File.ReadAllText("Assets/Ships.json");
             var ships = JsonConvert.DeserializeObject<Ship[]>(json);
             return ships;
+        }
+
+        public static Ship[] LoadFromOriginalData(string json)
+        {
+            var r = (JObject)JsonConvert.DeserializeObject(json);
+            var data = r["api_data"];
+            var masters = data["api_mst_ship"];
+
+            var ships = new List<Ship>();
+            foreach(var master in masters)
+            {
+                ships.Add(new Ship
+                {
+                    Id = int.Parse(master["api_id"].ToString()),
+                    Type = int.Parse(master["api_stype"].ToString()),
+                    AfterShip = int.Parse(master["api_aftershipid"]?.ToString() ?? "0"),
+                    Name = master["api_name"].ToString(),
+                    Yomi = master["api_yomi"].ToString()
+                });
+            };
+            return ships.ToArray();
         }
     }
 }
